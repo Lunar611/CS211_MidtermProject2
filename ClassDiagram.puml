@@ -1,0 +1,127 @@
+@startuml ClassDiagram
+title CS 211 Midterm Project 2 - Infix to Postfix Conversion and Postfix Evaluation\npackage midtermlabproject2
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam nodesep 40
+skinparam ranksep 50
+skinparam classBackgroundColor #FDFDFD
+skinparam classBorderColor #444444
+hide empty members
+
+class Main {
+  + main(args : String[]) : void {static}
+  - convertInfix(in : Scanner) : void {static}
+  - evaluatePostfix(in : Scanner) : void {static}
+}
+
+class InfixToPostfix {
+  + {static} HEADERS : String[]
+  - rows : List<Row>
+  - postfix : String
+  + getRows() : List<Row>
+  + getPostfix() : String
+  + {static} isOperator(t : String) : boolean
+  - {static} icp(t : String) : int
+  - {static} isp(t : String) : int
+  ~ {static} tokenize(infix : String) : List<String>
+  - {static} flushOperand(operand : StringBuilder, tokens : List<String>) : void
+  ~ {static} validate(tokens : List<String>) : void
+  + convert(infix : String) : String
+}
+
+class PostfixEvaluator {
+  + {static} HEADERS : String[]
+  - rows : List<Row>
+  + getRows() : List<Row>
+  + {static} format(d : double) : String
+  + evaluate(postfix : String) : double
+  - apply(op : char, a : double, b : double) : double
+}
+
+class TablePrinter <<final>> {
+  - TablePrinter()
+  + {static} print(headers : String[], rows : List<Row>) : void
+  - {static} separator(w : int[]) : String
+  - {static} line(cells : String[], w : int[]) : String
+}
+
+class Row {
+  - cells : String[]
+  + Row(cells : String...)
+  + getCells() : String[]
+}
+
+interface "Stack<T>" as Stack {
+  + size() : int
+  + isEmpty() : boolean
+  + top() : T
+  + pop() : T
+  + push(item : T) : void
+  + peek() : T
+  + clear() : void
+  + search(item : T) : int
+}
+
+class "LinkedStack<T>" as LinkedStack {
+  - top : Node<T>
+  - numElements : int
+  + size() : int
+  + isEmpty() : boolean
+  + top() : T
+  + pop() : T
+  + push(item : T) : void
+  + peek() : T
+  + clear() : void
+  + search(item : T) : int
+  + toString(separator : String) : String
+  + toString(separator : String, formatter : Function<T,String>) : String
+  - buildBottomToTop(node : Node<T>, sb : StringBuilder, separator : String, formatter : Function<T,String>) : void
+  + toString() : String
+}
+
+class "Node<T>" as Node {
+  - info : T
+  - link : Node<T>
+  + Node()
+  + Node(info : T, link : Node<T>)
+  + setInfo(info : T) : void
+  + setLink(link : Node<T>) : void
+  + getInfo() : T
+  + getLink() : Node<T>
+}
+
+class StackException {
+  + StackException(err : String)
+}
+
+class InvalidExpressionException {
+  + InvalidExpressionException(message : String)
+}
+
+class "RuntimeException" as RuntimeException <<java.lang>>
+class "Exception" as Exception <<java.lang>>
+
+Main ..> InfixToPostfix
+Main ..> PostfixEvaluator
+Main ..> TablePrinter
+Main ..> InvalidExpressionException : catches
+
+InfixToPostfix *-- "0..*" Row
+PostfixEvaluator *-- "0..*" Row
+TablePrinter ..> Row
+
+InfixToPostfix ..> LinkedStack : LinkedStack<String>
+PostfixEvaluator ..> LinkedStack : LinkedStack<Double>
+PostfixEvaluator ..> InfixToPostfix : isOperator()
+
+LinkedStack ..|> Stack
+LinkedStack o-- "0..1" Node : top
+Node --> "0..1" Node : link
+
+InfixToPostfix ..> InvalidExpressionException : throws
+PostfixEvaluator ..> InvalidExpressionException : throws
+LinkedStack ..> StackException : throws
+
+StackException --|> RuntimeException
+InvalidExpressionException --|> Exception
+@enduml
